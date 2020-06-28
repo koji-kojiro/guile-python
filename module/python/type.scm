@@ -16,10 +16,15 @@
   (positive?
     ((libpyproc int "PyCallable_Check" '(*)) pyobj)))
 
-(define (python->string pyobj)
+(define (python->repr pyobj)
   (pointer->string
     ((libpyproc '* "PyUnicode_AsUTF8" '(*))
       ((libpyproc '* "PyObject_Repr" '(*)) pyobj))))
+
+(define (python->string pyobj)
+  (pointer->string
+    ((libpyproc '* "PyUnicode_AsUTF8" '(*))
+      ((libpyproc '* "PyObject_Str" '(*)) pyobj))))
 
 (define-wrapped-pointer-type <python>
   python?
@@ -28,29 +33,26 @@
   (lambda (obj port)
     (let ((pyobj (unwrap-python obj)))
       (format port "#<python object of [~a] ~x>"
-              (python->string pyobj)
+              (python->repr pyobj)
               (pointer-address pyobj)))))
 
 (define (pycallable->scm pyobj)
-  (lambda* (#:key (key 0) #:allow-other-keys #:rest rest)
-    (let ((args '())
-          (kwargs '()))
-      (let loop ((index 0))
-        (when (< index (length rest))
-        (if (keyword? (list-ref rest index))
-            (begin
-              (append! kwargs
-                       (list (symbol->string
-                               (keyword->symbol (list-ref rest index)))
-                             (list-ref rest (1+ index))))
-              (loop (+ index 2)))
-            (begin
-              (append! args (list-ref rest index))
-              (loop (1+ index))))))
+  (lambda* (#:key (____key 0) #:allow-other-keys #:rest rest)
+    (let* ((kwargs-list (take-right rest (* 2 (count keyword? rest))))
+           (kwargs (make-hash-table))
+           (args (list->vector
+                   (take rest (- (length rest) (length kwargs-list))))))
+      (let loop ((n 0))
+        (when (< n (count keyword? rest))
+          (hash-table-set!
+            kwargs
+            (symbol->string
+              (keyword->symbol
+                (list-ref kwargs-list (* n 2))))
+            (list-ref kwargs-list (1+ (* n 2))))
+          (loop (1+ n))))
       (python->scm
-        (python-call pyobj
-                     (scm->python (list->vector args))
-                     (scm->python (alist->hash-table kwargs)))))))
+        (python-call pyobj (scm->python args) (scm->python kwargs))))))
 
 (define (pytuple->scm pyobj)
   (let* ((n ((libpyproc int "PyTuple_Size" '(*)) pyobj))
@@ -78,6 +80,10 @@
 
 (define (python->scm pyobj)
   (cond
+    ((null-pointer? pyobj)
+     (error
+      (format #f "An exception of ~a reported by python"
+        (python->repr ((libpyproc '* "PyErr_Occurred" '()))))))
     ((python-callable? pyobj) (pycallable->scm pyobj))
     ((python-isinstance? pyobj "Long")
      ((libpyproc long "PyLong_AsLong" '(*)) pyobj))
