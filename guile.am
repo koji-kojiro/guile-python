@@ -1,0 +1,18 @@
+guilemoduledir=$(GUILE_SITE)
+guileobjectdir=$(GUILE_SITE_CCACHE)
+
+GOBJECTS = $(SOURCES:%.scm=%.go)
+
+nobase_dist_guilemodule_DATA = $(SOURCES) $(NOCOMP_SOURCES)
+nobase_guileobject_DATA = $(GOBJECTS)
+
+# Install object files after source files have been installed
+guile_install_guileobject_files = install-nobase_guileobjectDATA
+$(guile_install_guileobject_files): install-nobase_dist_guilemoduleDATA
+
+CLEANFILES = $(GOBJECTS)
+GUILE_WARNINGS = -Wunbound-variable -Warity-mismatch -Wformat
+SUFFIXES = .scm .go
+
+.scm.go:
+	$(AM_V_GEN)$(top_builddir)/env $(GUILD) compile $(GUILE_WARNINGS) -o "$@" "$<"
