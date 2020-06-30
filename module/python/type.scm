@@ -16,6 +16,10 @@
   (positive?
     ((libpyproc int "PyCallable_Check" '(*)) pyobj)))
 
+(define (python-boolean? pyobj)
+  (positive?
+    ((libpyproc int "PyBool_Check" '(*)) pyobj)))
+
 (define (python->repr pyobj)
   (pointer->string
     ((libpyproc '* "PyUnicode_AsUTF8" '(*))
@@ -85,6 +89,8 @@
       (format #f "An exception of ~a reported by python"
         (python->repr ((libpyproc '* "PyErr_Occurred" '()))))))
     ((python-callable? pyobj) (pycallable->scm pyobj))
+    ((python-boolean? pyobj)
+     (not (zero? ((libpyproc long "PyLong_AsLong" '(*)) pyobj))))
     ((python-isinstance? pyobj "Long")
      ((libpyproc long "PyLong_AsLong" '(*)) pyobj))
     ((python-isinstance? pyobj "Float")
@@ -114,6 +120,9 @@
 
 (define-method (scm->python (obj <real>))
  ((libpyproc '* "PyFloat_FromDouble" `(,double)) obj))
+
+(define-method (scm->python (obj <boolean>))
+ ((libpyproc '* "PyFloat_FromLong" `(,long)) (if obj 1 0)))
 
 (define-method (scm->python (obj <foreign>)) obj)
 
