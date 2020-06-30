@@ -107,7 +107,7 @@
 
 (define-method (scm->python (obj <character-set>))
  ((libpyproc '* "PyBytes_FromString" '(*))
-  (string->pointer obj)))
+  (char-set->string (string->pointer obj))))
 
 (define-method (scm->python (obj <integer>))
  ((libpyproc '* "PyLong_FromLong" `(,long)) obj))
