@@ -16,10 +16,6 @@
   (positive?
     ((libpyproc int "PyCallable_Check" '(*)) pyobj)))
 
-(define (python-boolean? pyobj)
-  (positive?
-    ((libpyproc int "PyBool_Check" '(*)) pyobj)))
-
 (define (python->repr pyobj)
   (pointer->string
     ((libpyproc '* "PyUnicode_AsUTF8" '(*))
@@ -89,7 +85,7 @@
       (format #f "An exception of ~a reported by python"
         (python->repr ((libpyproc '* "PyErr_Occurred" '()))))))
     ((python-callable? pyobj) (pycallable->scm pyobj))
-    ((python-boolean? pyobj)
+    ((python-isinstance? pyobj "Bool")
      (not (zero? ((libpyproc long "PyLong_AsLong" '(*)) pyobj))))
     ((python-isinstance? pyobj "Long")
      ((libpyproc long "PyLong_AsLong" '(*)) pyobj))

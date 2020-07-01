@@ -5,6 +5,7 @@
             python-initialize
             python-initialized?
             python-finalize
+            python-run-string
             python-run-simple-string
             python-import-module
             python-getattr-string
@@ -43,6 +44,12 @@
 (define (python-run-simple-string code)
   (zero? ((libpyproc int "PyRun_SimpleString" '(*))
           (string->pointer code))))
+
+(define (python-run-string code)
+  (let ((env ((libpyproc '* "PyModule_GetDict" '(*))
+               (python-import-module "__main__")))) 
+    ((libpyproc '* "PyRun_String" `(* ,int * *))
+      (string->pointer code) 258 env env)))
 
 (define (python-import-module name)
   ((libpyproc '* "PyImport_ImportModule" '(*))
