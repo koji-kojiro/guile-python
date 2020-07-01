@@ -7,7 +7,7 @@
   #:use-module (srfi srfi-69)
   #:export (python->scm scm->python))
 
-(define (python-isinstance? pyobj type)
+(define (python-instance? pyobj type)
   (positive? 
     ((libpyproc int "PyObject_IsInstance" '(* *))
       pyobj (libpyptr (format #f "Py~a_Type" type)))))
@@ -15,6 +15,10 @@
 (define (python-callable? pyobj)
   (positive?
     ((libpyproc int "PyCallable_Check" '(*)) pyobj)))
+
+(define (python-none? pyobj)
+  (= (pointer-address pyobj)
+     (pointer-address (libpyptr "_Py_NoneStruct"))))
 
 (define (python->repr pyobj)
   (pointer->string
@@ -85,22 +89,23 @@
       (format #f "An exception of ~a reported by python"
         (python->repr ((libpyproc '* "PyErr_Occurred" '()))))))
     ((python-callable? pyobj) (pycallable->scm pyobj))
-    ((python-isinstance? pyobj "Bool")
+    ((python-none? pyobj) #nil)
+    ((python-instance? pyobj "Bool")
      (not (zero? ((libpyproc long "PyLong_AsLong" '(*)) pyobj))))
-    ((python-isinstance? pyobj "Long")
+    ((python-instance? pyobj "Long")
      ((libpyproc long "PyLong_AsLong" '(*)) pyobj))
-    ((python-isinstance? pyobj "Float")
+    ((python-instance? pyobj "Float")
      ((libpyproc double "PyFloat_AsDouble" '(*)) pyobj))
-    ((python-isinstance? pyobj "Unicode")
+    ((python-instance? pyobj "Unicode")
      (pointer->string
        ((libpyproc '* "PyUnicode_AsUTF8" '(*)) pyobj)))
-    ((python-isinstance? pyobj "Bytes")
+    ((python-instance? pyobj "Bytes")
      (string->char-set
       (pointer->string
         ((libpyproc '* "PyBytes_AsString" '(*)) pyobj))))
-    ((python-isinstance? pyobj "List") (pylist->scm pyobj))
-    ((python-isinstance? pyobj "Tuple") (pytuple->scm pyobj))
-    ((python-isinstance? pyobj "Dict") (pydict->scm pyobj))
+    ((python-instance? pyobj "List") (pylist->scm pyobj))
+    ((python-instance? pyobj "Tuple") (pytuple->scm pyobj))
+    ((python-instance? pyobj "Dict") (pydict->scm pyobj))
     (#t (wrap-python pyobj))))
 
 (define-method (scm->python (obj <string>))
@@ -118,7 +123,9 @@
  ((libpyproc '* "PyFloat_FromDouble" `(,double)) obj))
 
 (define-method (scm->python (obj <boolean>))
- ((libpyproc '* "PyFloat_FromLong" `(,long)) (if obj 1 0)))
+ (if (nil? obj)
+     (libpyptr "Py_None")
+     ((libpyproc '* "PyFloat_FromLong" `(,long)) (if obj 1 0))))
 
 (define-method (scm->python (obj <foreign>)) obj)
 
