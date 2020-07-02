@@ -40,6 +40,8 @@
               (python->repr pyobj)
               (pointer-address pyobj)))))
 
+(define <python-object> (class-of (wrap-python #nil)))
+
 (define (pycallable->scm pyobj)
   (lambda* (#:key (____key 0) #:allow-other-keys #:rest rest)
     (let* ((kwargs-list (take-right rest (* 2 (count keyword? rest))))
@@ -128,6 +130,7 @@
      ((libpyproc '* "PyBool_FromLong" `(,long)) (if obj 1 0))))
 
 (define-method (scm->python (obj <foreign>)) obj)
+(define-method (scm->python (obj <python-object>)) (unwrap-python obj))
 
 (define-method (scm->python (obj <list>))
   (let* ((n (length obj))
