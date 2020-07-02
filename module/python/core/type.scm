@@ -125,7 +125,7 @@
 (define-method (scm->python (obj <boolean>))
  (if (nil? obj)
      (libpyptr "Py_None")
-     ((libpyproc '* "PyFloat_FromLong" `(,long)) (if obj 1 0))))
+     ((libpyproc '* "PyBool_FromLong" `(,long)) (if obj 1 0))))
 
 (define-method (scm->python (obj <foreign>)) obj)
 
