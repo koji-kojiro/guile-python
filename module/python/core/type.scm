@@ -43,7 +43,7 @@
 (define <python-object> (class-of (wrap-python #nil)))
 
 (define (pycallable->scm pyobj)
-  (lambda* (#:key (____key 0) #:allow-other-keys #:rest rest)
+  (define* (proc #:key - #:allow-other-keys #:rest rest)
     (let* ((kwargs-list (take-right rest (* 2 (count keyword? rest))))
            (kwargs (make-hash-table))
            (args (list->vector
@@ -58,7 +58,11 @@
             (list-ref kwargs-list (1+ (* n 2))))
           (loop (1+ n))))
       (python->scm
-        (python-call pyobj (scm->python args) (scm->python kwargs))))))
+        (python-call pyobj (scm->python args) (scm->python kwargs)))))
+  (set-procedure-property! proc #:pyobj pyobj)
+  (set-procedure-property!
+    proc 'name (format #f "from python ~a" (python->repr pyobj)))
+  proc)
 
 (define (pytuple->scm pyobj)
   (let* ((n ((libpyproc int "PyTuple_Size" '(*)) pyobj))
@@ -128,6 +132,9 @@
  (if (nil? obj)
      (libpyptr "_Py_NoneStruct")
      ((libpyproc '* "PyBool_FromLong" `(,long)) (if obj 1 0))))
+
+(define-method (scm->python (obj <procedure>))
+  (procedure-property obj #:pyobj))
 
 (define-method (scm->python (obj <foreign>)) obj)
 (define-method (scm->python (obj <python-object>)) (unwrap-python obj))
