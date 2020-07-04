@@ -1,2 +1,2 @@
 SUBDIRS = module
-EXTRA_DIST = COPYING README bootstrap pre-inst-env.in
+EXTRA_DIST = LICENSE README.md bootstrap env.in
