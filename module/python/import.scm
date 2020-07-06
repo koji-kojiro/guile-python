@@ -34,19 +34,14 @@
                 (quote module) (quote object) (quote object)))))))
 
 (define-method (getattr obj attr)
-  (format #t "~s . ~s\n" obj attr)
   (python->scm (python-getattr-string (scm->python obj) attr)))
 
 (define-method (getattr (name <string>) attr)
-  (format #t "~s . ~s\n" name attr)
   (with-exception-handler
     (lambda (_)
       (eval-string (format #f "~a.~a" name attr)))
     (lambda () (getattr (eval-string name) attr))
     #:unwind? #t))
-
-(define (test obj attr)
-  (format #t "~s . ~s\n" attr obj))
 
 (define (read-python-syntax _ p)
   (let* ((names (string-split (symbol->string (read p)) #\.))
