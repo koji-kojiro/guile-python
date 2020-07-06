@@ -43,7 +43,7 @@
 (define <python-object> (class-of (wrap-python #nil)))
 
 (define (pycallable->scm pyobj)
-  (define* (proc #:key - #:allow-other-keys #:rest rest)
+  (define* (proc #:key -. #:allow-other-keys #:rest rest)
     (let* ((kwargs-list (take-right rest (* 2 (count keyword? rest))))
            (kwargs (make-hash-table))
            (args (list->vector
