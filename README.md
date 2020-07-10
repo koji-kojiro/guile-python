@@ -25,10 +25,11 @@ $ sudo make install
 ```
 
 ## Usage
-guile-python consists of three modules, `(python eval)`, `(python import)` and `(python core)`.  
-`(python eval)` provides a few procedures to run python code given as string.
-`(python import)` provides `import` macro (note that this shadows built-in `import`) and `#.` syntax, which allows python-style member accessing.  
-`(python core)` is a core module used internally.
+guile-python consists of three modules, `(python eval)`, `(python import)` and `(python core)`:  
+
+- `(python eval)` provides a few procedures to run python code given as string.
+- `(python import)` provides `import` macro (note that this shadows built-in `import`) and `#.` syntax, which allows python-style member accessing.  
+- `(python core)` is a core module used internally.
 
 Python object is converted to Scheme object according to the following table:  
 
