@@ -1,12 +1,11 @@
 (define-module (python import)
   #:use-module (python core type)
   #:use-module (python core libpython)
-  #:use-module (ice-9 optargs)
   #:replace (import))
 
-(defmacro* import (module)
+(defmacro import (module)
   `(define-public
-     ,(string->symbol (car (string-split (symbol->string as) #\.)))
+     ,(string->symbol (car (string-split (symbol->string module) #\.)))
        ((@ (python eval) python-eval) 
          (format #f "__import__(\"~a\")" (quote ,module)))))
 
