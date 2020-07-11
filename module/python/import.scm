@@ -1,19 +1,24 @@
 (define-module (python import)
   #:use-module (python core type)
   #:use-module (python core libpython)
+  #:use-module (ice-9 string-fun)
   #:replace (import))
+
+(define (scm-name->py-name name)
+  (string-replace-substring name "-" "_"))
 
 (defmacro import (module)
   `(define-public
      ,(string->symbol (car (string-split (symbol->string module) #\.)))
        ((@ (python eval) python-eval) 
-         (format #f "__import__(\"~a\")" (quote ,module)))))
+         (format #f "__import__(\"~a\")"
+           ,((@@ (python import) scm-name->py-name) (symbol->string module))))))
 
 (define (getattr obj . attrs)
   (for-each
     (lambda (attr)
       (set! obj (python->scm (python-getattr-string (scm->python obj) attr))))
-    attrs)
+    (map scm-name->py-name attrs))
   (if (list? obj) `(list ,@obj) obj))
 
 (define (read-python-syntax _ p)

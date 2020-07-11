@@ -7,7 +7,7 @@
 
 (let* ((handler #.http.server.SimpleHTTPRequestHandler)
        (httpd (#.socketserver.TCPServer #("" 8000) handler)))
-  (#.httpd.serve_forever))
+  (#.httpd.serve-forever))
 ```
 
 guile-python provides seamless interface to Python from GNU Guile. ***Note that the project is still in quite experimental stage.***  
@@ -48,6 +48,7 @@ Python object is converted to Scheme object according to the following table:
 | Callable object | Procedure                       |
 | Object          | Python object (wrapped pointer) | 
 
+
 ### Module:(python eval)
 - **Procedure:python-eval code**  
 &nbsp; &nbsp; Equivelent to `eval(code)` in Python. Returns evaluation result.  
@@ -62,6 +63,7 @@ Python object is converted to Scheme object according to the following table:
 
 - **Reader Extension:#.object.attribute...**  
 &nbsp; &nbsp; Equivelent to `foo.bar...` in Python. The value is automatically converted between Python and Scheme.  
+&nbsp; &nbsp; Python's `foo_bar` can be written `foo-bar` in Scheme.
 
 ## Author
 [TANI Kojiro](https://github.com/koji-kojiro) (kojiro0531@gmail.com)
