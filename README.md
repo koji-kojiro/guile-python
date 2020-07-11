@@ -18,7 +18,7 @@ guile-python provides seamless interface to Python from GNU Guile. Note that the
 
 ## Installation
 ```shell
-$ ./bootsrap
+$ ./bootstrap
 $ ./configure
 $ make
 $ sudo make install
