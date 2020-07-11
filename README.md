@@ -10,7 +10,7 @@
   (#.httpd.serve_forever))
 ```
 
-guile-python provides seamless interface to Python from GNU Guile. Note that the project is still in quite experimental stage.  
+guile-python provides seamless interface to Python from GNU Guile. ***Note that the project is still in quite experimental stage.***  
 
 ## Requirements
 - GNU Guile 2.2+
