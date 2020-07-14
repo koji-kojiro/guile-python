@@ -20,10 +20,15 @@
   (= (pointer-address pyobj)
      (pointer-address (libpyptr "_Py_NoneStruct"))))
 
-(define (python->repr pyobj)
+(define (python-repr pyobj)
   (pointer->string
     ((libpyproc '* "PyUnicode_AsUTF8" '(*))
       ((libpyproc '* "PyObject_Repr" '(*)) pyobj))))
+
+(define (python-str pyobj)
+  (pointer->string
+    ((libpyproc '* "PyUnicode_AsUTF8" '(*))
+      ((libpyproc '* "PyObject_Str" '(*)) pyobj))))
 
 (define (python->string pyobj)
   (pointer->string
@@ -37,7 +42,7 @@
   (lambda (obj port)
     (let ((pyobj (unwrap-python obj)))
       (format port "#<python object of [~a] ~x>"
-              (python->repr pyobj)
+              (python-repr pyobj)
               (pointer-address pyobj)))))
 
 (define <python-object> (class-of (wrap-python #nil)))
@@ -61,7 +66,7 @@
         (python-call pyobj (scm->python args) (scm->python kwargs)))))
   (set-procedure-property! proc #:pyobj pyobj)
   (set-procedure-property!
-    proc 'name (format #f "from python ~a" (python->repr pyobj)))
+    proc 'name (format #f "from python ~a" (python-repr pyobj)))
   proc)
 
 (define (pytuple->scm pyobj)
@@ -88,12 +93,20 @@
       (pylist->scm
         ((libpyproc '* "PyDict_Items" '(*)) pyobj)))))
 
+(define (python-fetch-error)
+  (let ((type (scm->pointer (gensym)))
+        (value (scm->pointer (gensym)))
+        (traceback (scm->pointer (gensym))))
+    ((libpyproc void "PyErr_Fetch" '(* * *)) type value traceback)
+    (map dereference-pointer `(,type ,value ,traceback))))
+
 (define (python->scm pyobj)
   (cond
     ((null-pointer? pyobj)
      (error
-      (format #f "An exception of ~a reported by python"
-        (python->repr ((libpyproc '* "PyErr_Occurred" '()))))))
+       (let ((info (python-fetch-error)))
+         (format #f "An exception of ~a reported by python:\n~a"
+           (python-repr (car info)) (python-str (cadr info))))))
     ((python-callable? pyobj) (pycallable->scm pyobj))
     ((python-none? pyobj) #nil)
     ((python-instance? pyobj "Bool")
