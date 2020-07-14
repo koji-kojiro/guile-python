@@ -40,7 +40,7 @@ Python object is converted to Scheme object according to the following table:
 |:---------------:|:-------------------------------:|
 | Integer         | Integer                         |
 | Float           | Real                            |
-| Bytes           | Character set                   |
+| Bytes           | Bytevector                      |
 | String          | String                          |
 | List            | List                            |
 | Tuple           | Vector                          |
