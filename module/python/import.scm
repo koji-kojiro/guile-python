@@ -19,7 +19,7 @@
     (lambda (attr)
       (set! obj (python->scm (python-getattr-string (scm->python obj) attr))))
     (map scm-name->py-name attrs))
-  (if (list? obj) `(list ,@obj) obj))
+  (if (list? obj) `(,@obj) obj))
 
 (define (read-python-syntax _ p)
   (let ((names (string-split (symbol->string (read p)) #\.)))
