@@ -1,4 +1,7 @@
 # guile-python
+### ***WARNING: WIP***
+***The project is still in an experimental stage. There should be unknown bugs and missing components.***
+
 ```scheme
 (use-modules (python import))
 
@@ -10,7 +13,7 @@
   (#.httpd.serve-forever))
 ```
 
-guile-python provides seamless interface to Python from GNU Guile. ***Note that the project is still in quite experimental stage.***  
+guile-python provides seamless interface to Python from GNU Guile.
 
 ## Requirements
 - GNU Guile 2.2+
