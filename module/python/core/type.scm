@@ -2,6 +2,7 @@
   #:use-module (python core libpython)
   #:use-module (system foreign)
   #:use-module (oop goops)
+  #:use-module (ice-9 iconv)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-69)
@@ -119,9 +120,10 @@
      (pointer->string
        ((libpyproc '* "PyUnicode_AsUTF8" '(*)) pyobj)))
     ((python-instance? pyobj "Bytes")
-     (string->char-set
+     (string->bytevector
       (pointer->string
-        ((libpyproc '* "PyBytes_AsString" '(*)) pyobj))))
+        ((libpyproc '* "PyBytes_AsString" '(*)) pyobj))
+      "utf-8"))
     ((python-instance? pyobj "List") (pylist->scm pyobj))
     ((python-instance? pyobj "Tuple") (pytuple->scm pyobj))
     ((python-instance? pyobj "Dict") (pydict->scm pyobj))
@@ -130,10 +132,6 @@
 (define-method (scm->python (obj <string>))
  ((libpyproc '* "PyUnicode_FromString" '(*))
   (string->pointer obj)))
-
-(define-method (scm->python (obj <character-set>))
- ((libpyproc '* "PyBytes_FromString" '(*))
-  (char-set->string (string->pointer obj))))
 
 (define-method (scm->python (obj <integer>))
  ((libpyproc '* "PyLong_FromLong" `(,long)) obj))
@@ -151,6 +149,10 @@
 
 (define-method (scm->python (obj <foreign>)) obj)
 (define-method (scm->python (obj <python-object>)) (unwrap-python obj))
+
+(define-method (scm->python (obj <bytevector>))
+ ((libpyproc '* "PyBytes_FromString" '(*))
+   (string->pointer (bytevector->string obj "utf-8"))))
 
 (define-method (scm->python (obj <list>))
   (let* ((n (length obj))
