@@ -9,6 +9,7 @@
             python-run-simple-string
             python-import-module
             python-getattr-string
+            python-setattr-string
             python-call
             python-call-object))
 
@@ -58,6 +59,10 @@
 (define (python-getattr-string pyobj attr)
   ((libpyproc '* "PyObject_GetAttrString" '(* *))
     pyobj (string->pointer attr)))
+
+(define (python-setattr-string pyobj attr value)
+  ((libpyproc int "PyObject_SetAttrString" '(* * *))
+    pyobj (string->pointer attr) value))
 
 (define (python-gettype pyobj)
   (cadr (parse-c-struct pyobj '(int *)))) 
