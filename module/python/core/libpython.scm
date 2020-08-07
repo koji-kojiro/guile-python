@@ -15,15 +15,15 @@
 
 (define libpython)
 
-(let find-python ((version 3.9))
+(let find-python ((version 9))
   (with-exception-handler
     (lambda (exception)
-      (if (> version 3.3)
-          (find-python (- version 0.1))
+      (if (> version 3)
+          (find-python (- version 1))
           (error "cannot find libpython (>3.6)")))
     (lambda ()
       (set! libpython
-            (dynamic-link (format #f "libpython~s" version))))
+            (dynamic-link (format #f "libpython3.~s" version))))
     #:unwind? #t))
 
 (define (libpyproc type name args)
